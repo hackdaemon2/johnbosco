@@ -9,6 +9,7 @@ import com.interswittch.johnbosco.common.dto.CreditAccountDto;
 import com.interswittch.johnbosco.common.dto.CustomApiResponse;
 import com.interswittch.johnbosco.common.dto.TransactionPageDto;
 import com.interswittch.johnbosco.common.enums.SortOrder;
+import com.interswittch.johnbosco.common.enums.TransactionType;
 import com.interswittch.johnbosco.common.exception.BusinessException;
 import com.interswittch.johnbosco.common.exception.ResourceConflictException;
 import com.interswittch.johnbosco.common.exception.ResourceNotFoundException;
@@ -49,6 +50,18 @@ public class AccountService implements IAccountService {
                                                      .orElseThrow(() -> new ResourceNotFoundException("Account does not exist"));
             account.setBalance(account.getBalance().add(creditAccountDto.amount()));
             AccountEntity updatedAccount = accountRepository.save(account);
+
+            // create transaction
+            TransactionEntity transactionEntity = TransactionEntity
+                    .builder()
+                    .account(account)
+                    .amount(creditAccountDto.amount())
+                    .type(TransactionType.CREDIT)
+                    .date(LocalDateTime.now())
+                    .narration("CR transactions")
+                    .build();
+
+            transactionRepository.save(transactionEntity);
             CustomApiResponse<AccountEntity> response = new CustomApiResponse<>(updatedAccount, false);
             log.info("credit account response => {}", mapper.writeValueAsString(response));
             return response;
