@@ -1,0 +1,18 @@
+version: "3.1"
+services:
+   db:
+      image: mysql:8.0
+      restart: always
+      container_name: mysql-db
+      environment:
+         MYSQL_ROOT_PASSWORD: rootpassword
+         MYSQL_DATABASE: johnbosco
+         MYSQL_USER: dbuser
+         MYSQL_PASSWORD: password
+      ports:
+         - "3306:3306" # Map container's 3306 port to host's 3306
+      volumes:
+         - mysql_data:/var/lib/mysql
+
+volumes:
+   mysql_data:
