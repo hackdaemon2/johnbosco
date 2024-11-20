@@ -36,8 +36,6 @@ public class LoanService implements ILoanService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
 
-    private static final int TWELVE = 12;
-
     @Transactional
     @Override
     public CustomApiResponse<LoanEntity> requestLoan(LoanRequestDto loanRequestDto) {
