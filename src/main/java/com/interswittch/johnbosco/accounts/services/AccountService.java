@@ -90,17 +90,16 @@ public class AccountService implements IAccountService {
                                  throw new ResourceConflictException("account already exists");
                              });
 
-            AccountEntity account = EntityMapper.mapToEntity(
+            AccountEntity savedAccount = EntityMapper.mapToEntity(
                     accountDto,
                     customer,
-                    (dto, customerEntity) -> AccountEntity
+                    (dto, customerEntity) -> accountRepository.save(AccountEntity
                             .builder()
                             .accountNumber(dto.accountNumber())
                             .balance(BigDecimal.ZERO)
                             .customer(customerEntity)
-                            .build());
+                            .build()));
 
-            AccountEntity savedAccount = accountRepository.save(account);
             CustomApiResponse<AccountEntity> response = new CustomApiResponse<>(savedAccount, false);
             log.info("create account response => {}", mapper.writeValueAsString(response));
             return response;

@@ -12,8 +12,8 @@ import com.interswittch.johnbosco.common.exception.BusinessException;
 import com.interswittch.johnbosco.common.exception.ResourceNotFoundException;
 import com.interswittch.johnbosco.common.util.EntityMapper;
 import com.interswittch.johnbosco.common.util.TransactionMapper;
-import com.interswittch.johnbosco.loans.repositories.LoanRepository;
 import com.interswittch.johnbosco.loans.models.LoanEntity;
+import com.interswittch.johnbosco.loans.repositories.LoanRepository;
 import com.interswittch.johnbosco.transactions.models.TransactionEntity;
 import com.interswittch.johnbosco.transactions.repositories.TransactionRepository;
 import jakarta.transaction.Transactional;
@@ -53,8 +53,7 @@ public class LoanService implements ILoanService {
                 throw new BusinessException(message);
             }
 
-            LoanEntity loan = formulateLoanEntity(loanRequestDto, account);
-            LoanEntity savedLoan = loanRepository.save(loan);
+            LoanEntity savedLoan = saveLoanEntity(loanRequestDto, account);
             CustomApiResponse<LoanEntity> response = new CustomApiResponse<>(savedLoan, false);
             log.info("loan acquisition response => {}", mapper.writeValueAsString(response));
             return response;
@@ -98,13 +97,13 @@ public class LoanService implements ILoanService {
         }
     }
 
-    private static LoanEntity formulateLoanEntity(LoanRequestDto loanRequestDto, AccountEntity account) {
+    private LoanEntity saveLoanEntity(LoanRequestDto loanRequestDto, AccountEntity account) {
         BigDecimal totalRepaymentAmount = loanRequestDto.amount();
         BigDecimal monthlyRepaymentAmount = totalRepaymentAmount.multiply(BigDecimal.valueOf(0.1), MathContext.DECIMAL32); // 10% of loan amount
         return EntityMapper.mapToEntity(
                 loanRequestDto,
                 account,
-                (dto, accountEntity) -> LoanEntity
+                (dto, accountEntity) -> loanRepository.save(LoanEntity
                         .builder()
                         .account(accountEntity)
                         .loanAmount(dto.amount())
@@ -113,6 +112,6 @@ public class LoanService implements ILoanService {
                         .loanRepaidAmount(BigDecimal.ZERO)
                         .totalRepaymentAmount(totalRepaymentAmount)
                         .monthlyRepaymentAmount(monthlyRepaymentAmount)
-                        .build());
+                        .build()));
     }
 }
