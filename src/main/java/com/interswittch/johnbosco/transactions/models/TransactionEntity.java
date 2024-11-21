@@ -1,5 +1,6 @@
 package com.interswittch.johnbosco.transactions.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.interswittch.johnbosco.accounts.models.AccountEntity;
@@ -30,5 +31,7 @@ public class TransactionEntity extends AbstractEntity {
 
     private String narration;
     private BigDecimal amount;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime date;
 }
