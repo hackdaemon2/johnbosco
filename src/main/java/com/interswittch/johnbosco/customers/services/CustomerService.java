@@ -34,17 +34,16 @@ public class CustomerService implements ICustomerService {
                 throw new ResourceConflictException(message);
             }
 
-            CustomerEntity customer = EntityMapper.mapToEntity(
+            CustomerEntity savedCustomer = EntityMapper.mapToEntity(
                     customerDto,
-                    dto -> CustomerEntity
+                    dto -> customerRepository.save(CustomerEntity
                             .builder()
                             .email(dto.email())
                             .firstName(dto.firstName())
                             .lastName(dto.lastName())
                             .phoneNumber(dto.phoneNumber())
-                            .build());
+                            .build()));
 
-            CustomerEntity savedCustomer = customerRepository.save(customer);
             CustomApiResponse<CustomerEntity> response = new CustomApiResponse<>(savedCustomer, false);
             log.info("create customer response => {}", mapper.writeValueAsString(response));
             return response;
