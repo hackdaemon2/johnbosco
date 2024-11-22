@@ -48,6 +48,7 @@ public class AccountService implements IAccountService {
             log.info("credit account request => {}", mapper.writeValueAsString(creditAccountDto));
             AccountEntity account = accountRepository.findByAccountNumber(creditAccountDto.accountNumber())
                                                      .orElseThrow(() -> new ResourceNotFoundException("Account does not exist"));
+
             account.setBalance(account.getBalance().add(creditAccountDto.amount()));
             AccountEntity updatedAccount = accountRepository.save(account);
 
@@ -117,13 +118,16 @@ public class AccountService implements IAccountService {
             }
 
             Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortOrder.name()), "id");
+
             AccountEntity accountEntity = accountRepository.findByAccountNumber(accountNumber)
                                                            .orElseThrow(() -> new ResourceNotFoundException("account not found"));
+
             Page<TransactionEntity> transactions = transactionRepository.findByAccountAndDateBetween(
                     accountEntity,
                     startDate.toLocalDate().atStartOfDay(),
                     endDate.toLocalDate().atTime(LocalTime.MAX),
                     pageable);
+
             TransactionPageDto response = TransactionPageDto.builder()
                                                             .totalPages(transactions.getTotalPages())
                                                             .count(transactions.getTotalElements())
@@ -131,6 +135,7 @@ public class AccountService implements IAccountService {
                                                             .page(page)
                                                             .data(transactions.getContent())
                                                             .build();
+
             log.info("account statement response => {}", mapper.writeValueAsString(response));
             return response;
         } catch (JsonProcessingException exception) {
