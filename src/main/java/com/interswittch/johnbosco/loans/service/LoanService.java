@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -43,15 +42,15 @@ public class LoanService implements ILoanService {
             log.info("loan acquisition request => {}", mapper.writeValueAsString(loanRequestDto));
 
             AccountEntity account;
-            account = accountRepository.findByAccountNumber(loanRequestDto.accountNumber()).orElseThrow(() -> new BusinessException("Account not found"));
+            account = accountRepository.findByAccountNumber(loanRequestDto.accountNumber())
+                                       .orElseThrow(() -> new BusinessException("Account not found"));
 
-            Optional<LoanEntity> activeLoan = loanRepository.findExistingLoan(account, LoanStatus.APPROVED);
-
-            if (activeLoan.isPresent()) {
-                String message = "Existing loan must be repaid first";
-                log.warn(message);
-                throw new BusinessException(message);
-            }
+            loanRepository.findExistingLoan(account, LoanStatus.APPROVED)
+                          .ifPresent(activeLoan -> {
+                              String message = "Existing loan must be repaid first";
+                              log.warn(message);
+                              throw new BusinessException(message);
+                          });
 
             LoanEntity savedLoan = saveLoanEntity(loanRequestDto, account);
             CustomApiResponse<LoanEntity> response = new CustomApiResponse<>(savedLoan, false);
@@ -67,7 +66,8 @@ public class LoanService implements ILoanService {
     public CustomApiResponse<LoanEntity> approveOrRejectLoan(String loanId, LoanStatus loanStatus) {
         try {
             log.info("loan approval request => {}", loanId);
-            LoanEntity loanEntity = loanRepository.findByLoanId(loanId).orElseThrow(() -> new ResourceNotFoundException("Loan not found"));
+            LoanEntity loanEntity = loanRepository.findByLoanId(loanId)
+                                                  .orElseThrow(() -> new ResourceNotFoundException("Loan not found"));
 
             if (loanStatus == LoanStatus.PENDING || loanStatus == LoanStatus.COMPLETED) {
                 throw new BusinessException("invalid loan status passed");
